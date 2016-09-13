@@ -54,9 +54,9 @@ class Classifier(object):
 
     def _get_next_img_path(self, train=True):
         if train:
-            img_path = self.train_set[self.train_batch_start]['path']
-            img_clss = self.train_set[self.train_batch_start]['class']
-            if self.train_batch_start < len(self.train_set):
+            img_path = self.training_set[self.train_batch_start]['path']
+            img_clss = self.training_set[self.train_batch_start]['class']
+            if self.train_batch_start < len(self.training_set):
                 self.train_batch_start += 1
             else:
                 self.train_batch_start = 0
@@ -230,10 +230,10 @@ class Classifier(object):
                 x = tf.placeholder(tf.float32, [1, self.params['crop_size'], self.params['crop_size'], 3])
                 y = tf.placeholder(tf.float32, [None, self.params['n_classes']])
                 _var = tf.placeholder(tf.float32)
-                # Model
-                model_arch = Model.alexnet(x, _var)
+                model = Model(x)
+                nn = model.get_network(_var)
                 saver = tf.train.Saver()
                 saver.restore(sess, self.model_weights)
-                prob = tf.nn.softmax(model_arch)
+                prob = tf.nn.softmax(nn)
                 output = sess.run(prob, feed_dict={x:img_input, _var:1.})
         return output
