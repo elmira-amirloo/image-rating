@@ -165,8 +165,7 @@ def read_txt_list(data_path):
 
 
 def get_class_stat(data_list):
-    data_stats = {"class_name":[], "num_data":[]}
-    for key, value in data_list.iteritems():
-        data_stats["class_name"].append(key)
-        data_stats["num_data"].append(len(value))
+    data_stats = {"class_name":["0", "1", "2", "3", "4"], "num_data":[]}
+    for each_class in data_stats["class_name"]:
+        data_stats["num_data"].append(len(data_list[each_class]))
     return data_stats
