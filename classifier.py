@@ -16,7 +16,7 @@ logger.addHandler(logging.StreamHandler())
 
 class Classifier(object):
 
-    def __init__(self, classifier_directory, train=True):
+    def __init__(self, classifier_directory):
         """Initializing classifier with model definition and parameters"""
         params_path = os.path.join(classifier_directory, 'params.json')
         if not os.path.exists(params_path):
@@ -34,6 +34,7 @@ class Classifier(object):
 
         #detection parameters
         self.model_weights = None
+        self.class_labels = None
 
 
     def _fit_img_to_model(self, img_path, scale_size):
@@ -68,7 +69,7 @@ class Classifier(object):
                 self.test_batch_start += 1
             else:
                 self.test_batch_start = 0
-        return img_path, clss
+        return img_path, img_clss
 
     def _get_data_batch(self, batch_size, train=True):
 
@@ -81,7 +82,7 @@ class Classifier(object):
                 imgs_list = self.training_set[self.train_batch_start: self.train_batch_start + batch_size]
                 self.train_batch_start += batch_size
             else:
-                next_starting_point = (self.train_batch_start + batch_size)%self.len(self.training_set)
+                next_starting_point = (self.train_batch_start + batch_size)%len(self.training_set)
                 imgs_list = self.training_set[self.train_batch_start:] + self.training_set[:next_starting_point]
                 self.train_batch_start = next_starting_point
         else:
@@ -89,7 +90,7 @@ class Classifier(object):
                 imgs_list = self.test_set[self.test_batch_start: self.test_batch_start + batch_size]
                 self.test_batch_start += batch_size
             else:
-                next_starting_point = (self.test_batch_start + batch_size)%self.len(self.test_set)
+                next_starting_point = (self.test_batch_start + batch_size)%len(self.test_set)
                 imgs_list = self.test_set[self.test_batch_start:] + self.test_set[:next_starting_point]
                 self.test_batch_start = next_starting_point
 
@@ -219,8 +220,16 @@ class Classifier(object):
         """ The main function for img rating """
         if self.model_weights is None:
             self.model_weights = os.path.join(self.classifier_directory, 'model_weights.ckpt')
-            if not os.path.exists(params_path):
+            if not os.path.exists(self.model_weights):
                 raise EnvironmentError('The model parameters are not provided in the specified location: %s', params_path)
+
+        if self.class_labels is None:
+            class_labels_path = os.path.join(self.classifier_directory, 'labels.json')
+            if not os.path.exists(class_labels_path):
+                raise EnvironmentError('The model parameters are not provided in the specified location: %s', params_path)
+            else:
+                with open(class_labels_path, 'r') as class_label_file:
+                    self.class_labels = json.load(class_label_file)
 
         tf.reset_default_graph() #making sure the memory is released
         img_input = self._fit_img_to_model(img_path, self.params['crop_size'])
@@ -235,5 +244,7 @@ class Classifier(object):
                 saver = tf.train.Saver()
                 saver.restore(sess, self.model_weights)
                 prob = tf.nn.softmax(nn)
-                output = sess.run(prob, feed_dict={x:img_input, _var:1.})
-        return output
+                predections = sess.run(prob, feed_dict={x:img_input, _var:1.})
+                image_popularity = np.argmax(predections)
+
+        return self.class_labels.get(str(image_popularity))

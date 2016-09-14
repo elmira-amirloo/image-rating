@@ -131,7 +131,7 @@ def download_files_from_urls(url_path_list):
         logging.debug("Shutting down workers")
         exit_signal.set()
 
-def write_train_test_files(data_set_path):
+def write_train_test_files(data_set_path, text_file_name):
     label_map = data_set_dict_reduced = {'80-100': 0, '60-80': 1, '40-60': 2, '20-40': 3, '0-20': 4}
 
     for root, dirs, files in os.walk(data_set_path):
@@ -139,7 +139,7 @@ def write_train_test_files(data_set_path):
             if file_each.endswith('.jpg'):
                 training_txt = "{0} {1}\n".format(os.path.join(root, file_each), label_map[root.split('/')[-1]])
                 testing_txt = "{0} {1}\n".format(os.path.join(root, file_each), label_map[root.split('/')[-1]])
-                with open("testing.txt", "a") as train_file:
+                with open(test_file_name, "a") as train_file:
                     train_file.write(training_txt)
 
 
@@ -151,3 +151,22 @@ def download_imgs(data_set_all=None, main_dir = 'dataset'):
     data_set_reduced = reduce_data_set(data_set_all)
     url_img_path = create_list_images(data_set_reduced, main_dir)
     downloaded_files = download_files_from_urls(url_img_path)
+
+
+
+def read_txt_list(data_path):
+    data_list = {}
+    with open(data_path) as data_file:
+        lines = data_file.readlines()
+        for l in lines:
+            items = l.split()
+            data_list.setdefault(str(items[1]),[]).append(items[0])
+    return data_list
+
+
+def get_class_stat(data_list):
+    data_stats = {"class_name":[], "num_data":[]}
+    for key, value in data_list.iteritems():
+        data_stats["class_name"].append(key)
+        data_stats["num_data"].append(len(value))
+    return data_stats
