@@ -117,7 +117,7 @@ class Classifier(object):
         return images, one_hot_label
 
 
-    def _read_image(self, img_path, mean_training=np.array([0., 0., 0.])):
+    def _read_image(self, img_path, mean_training=np.array([104, 117, 123])):#mean_training = imagenet mean
         """reading the img"""
         #cv2 usually doesn't throw an error properly while reading img. this
         #function will handle it.
@@ -210,7 +210,7 @@ class Classifier(object):
                     current_batch_loss = sess.run(loss, feed_dict={x: batch_xs, y: batch_ys, _var: 1.})
                     logger.info('Iteration: {0}, training accuracy: {1}, loss:{2}'.format(iter_num, current_batch_accuracy, current_batch_loss))
                     saver.save(sess, "{0}/saved_model_{1}.ckpt".format(self.classifier_directory, str(iter_num)))
-                    accuracy_training.append({'step':iter_num, 'acc': current_batch_accuracy})
+                    accuracy_training.append({'step':iter_num, 'acc': current_batch_accuracy, 'loss':current_batch_loss})
 
                 iter_num += 1
         return accuracy_training, accuracy_testing
