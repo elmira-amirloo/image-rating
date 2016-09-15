@@ -202,13 +202,13 @@ class Classifier(object):
 
                 if iter_num%test_step == 0:
                     test_accuracy = get_test_accuracy(sess, accuracy, number_of_test_batches)
-                    logger.info("iteration: {0}, test accuracy is {1}".format(iter_num, test_accuracy))
+                    logger.info("Iteration step: {0}, test accuracy is {1}".format(iter_num, test_accuracy))
                     accuracy_testing.append({'step':iter_num, 'acc': test_accuracy})
 
                 if iter_num%save_step == 0:
                     current_batch_accuracy = sess.run(accuracy, feed_dict={x: batch_xs, y: batch_ys, _var: 1.})
                     current_batch_loss = sess.run(loss, feed_dict={x: batch_xs, y: batch_ys, _var: 1.})
-                    logger.info('Iteration: {0}, training accuracy: {1}, loss:{2}'.format(iter_num, current_batch_accuracy, current_batch_loss))
+                    logger.info('Iteration step: {0}, training accuracy: {1}, loss:{2}'.format(iter_num, current_batch_accuracy, current_batch_loss))
                     saver.save(sess, "{0}/saved_model_{1}.ckpt".format(self.classifier_directory, str(iter_num)))
                     accuracy_training.append({'step':iter_num, 'acc': current_batch_accuracy, 'loss':current_batch_loss})
 
